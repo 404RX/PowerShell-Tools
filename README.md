@@ -84,3 +84,4 @@ Corey Miller
 
 - Microsoft PowerShell Team for the amazing scripting language
 - The PowerShell community for inspiration and best practices
+- Scripts and documentation created with assistance from Claude AI (Anthropic)
