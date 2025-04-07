@@ -1129,6 +1129,1351 @@ finally {
     Date: $(Get-FormattedDate)
     Requires: PowerShell 5.1 or later
 #>
-
 function $ProjectName {
-    [CmdletBinding
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = `$true, HelpMessage = "Enter the value for Param1")]
+        [string]`$Param1,
+        
+        [Parameter(Mandatory = `$false)]
+        [string]`$Param2 = "DefaultValue"
+    )
+    
+    begin {
+        Write-Verbose "Starting `$($MyInvocation.MyCommand.Name)"
+        # Initialization code
+    }
+    
+    process {
+        try {
+            # Main function logic here
+            Write-Verbose "Processing with Param1: `$Param1, Param2: `$Param2"
+            
+            # Example operation
+            `$result = "Processed: `$Param1 with `$Param2"
+            
+            return `$result
+        }
+        catch {
+            Write-Error "An error occurred: `$(`$_.Exception.Message)"
+            throw `$_
+        }
+    }
+    
+    end {
+        Write-Verbose "Completed `$($MyInvocation.MyCommand.Name)"
+        # Cleanup code
+    }
+}
+"@
+            return $Template
+        }
+        
+        "Module" {
+            $Template = @"
+<#
+.SYNOPSIS
+    $ProjectName - PowerShell Module
+
+.DESCRIPTION
+    $Description
+
+.NOTES
+    Author: $Author
+    Date: $(Get-FormattedDate)
+    Requires: PowerShell 5.1 or later
+#>
+
+# Module manifest
+# Run New-ModuleManifest to create this file
+# New-ModuleManifest -Path "$ProjectName.psd1" -RootModule "$ProjectName.psm1" -Author "$Author" -Description "$Description"
+
+# Module implementation
+function Get-$ProjectName {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = `$true)]
+        [string]`$InputParam
+    )
+    
+    begin {
+        Write-Verbose "Starting Get-$ProjectName"
+    }
+    
+    process {
+        try {
+            # Function implementation
+            return "Processed: `$InputParam"
+        }
+        catch {
+            Write-Error "An error occurred: `$(`$_.Exception.Message)"
+            throw `$_
+        }
+    }
+    
+    end {
+        Write-Verbose "Completed Get-$ProjectName"
+    }
+}
+
+function Set-$ProjectName {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = `$true)]
+        [string]`$Name,
+        
+        [Parameter(Mandatory = `$true)]
+        [string]`$Value
+    )
+    
+    begin {
+        Write-Verbose "Starting Set-$ProjectName"
+    }
+    
+    process {
+        try {
+            # Function implementation
+            return "Set `$Name to `$Value"
+        }
+        catch {
+            Write-Error "An error occurred: `$(`$_.Exception.Message)"
+            throw `$_
+        }
+    }
+    
+    end {
+        Write-Verbose "Completed Set-$ProjectName"
+    }
+}
+
+# Export module members
+Export-ModuleMember -Function Get-$ProjectName, Set-$ProjectName
+"@
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported PowerShell template type: $TemplateType. Supported types: Script, Function, Module"
+        }
+    }
+}
+
+# Function to generate Python templates
+function Get-PythonTemplate {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateType,
+        
+        [Parameter()]
+        [string]$ProjectName = "my_project",
+        
+        [Parameter()]
+        [string]$Author,
+        
+        [Parameter()]
+        [string]$Description
+    )
+    
+    switch ($TemplateType) {
+        "Script" {
+            $Template = @'
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+{0} - {1}
+
+Author: {2}
+Date: {3}
+"""
+
+import sys
+import os
+import argparse
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger('{0}')
+
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='{1}')
+    parser.add_argument('--input', '-i', required=True, help='Input file or directory')
+    parser.add_argument('--output', '-o', help='Output file or directory')
+    parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose output')
+    
+    return parser.parse_args()
+
+def main():
+    """Main function."""
+    args = parse_arguments()
+    
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+    
+    logger.info(f"Starting {{os.path.basename(__file__)}}")
+    logger.debug(f"Arguments: {{args}}")
+    
+    try:
+        # Your code here
+        logger.info(f"Processing input: {{args.input}}")
+        
+        # Example processing
+        result = f"Processed {{args.input}}"
+        
+        # Output handling
+        if args.output:
+            with open(args.output, 'w') as f:
+                f.write(result)
+            logger.info(f"Results written to {{args.output}}")
+        else:
+            print(result)
+        
+        logger.info("Processing completed successfully")
+        return 0
+    except Exception as e:
+        logger.error(f"An error occurred: {{str(e)}}")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        "Class" {
+            $Template = @'
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+{0} - {1}
+
+Author: {2}
+Date: {3}
+"""
+
+class {0}:
+    """
+    {1}
+    
+    Attributes:
+        name (str): The name of the instance
+        config (dict): Configuration dictionary
+    """
+    
+    def __init__(self, name, config=None):
+        """
+        Initialize a new {0} instance.
+        
+        Args:
+            name (str): The name of the instance
+            config (dict, optional): Configuration dictionary. Defaults to None.
+        """
+        self.name = name
+        self.config = config or {{}}
+        self._private_var = None
+        
+    def initialize(self):
+        """Initialize the instance with the provided configuration."""
+        print(f"Initializing {{self.name}} with config: {{self.config}}")
+        self._private_var = "initialized"
+        return True
+        
+    def process(self, data):
+        """
+        Process the provided data.
+        
+        Args:
+            data: The data to process
+            
+        Returns:
+            The processed data
+        """
+        if not self._private_var:
+            raise RuntimeError("Instance not initialized. Call initialize() first.")
+            
+        print(f"Processing data with {{self.name}}")
+        return f"Processed: {{data}}"
+        
+    def _private_method(self):
+        """Private method (by convention)."""
+        return self._private_var
+        
+    @staticmethod
+    def static_method(input_data):
+        """
+        Static method example.
+        
+        Args:
+            input_data: The input data
+            
+        Returns:
+            The processed input data
+        """
+        return f"Static processed: {{input_data}}"
+        
+    @classmethod
+    def from_dict(cls, data_dict):
+        """
+        Create a new instance from a dictionary.
+        
+        Args:
+            data_dict (dict): Dictionary containing 'name' and optional 'config'
+            
+        Returns:
+            A new {0} instance
+        """
+        name = data_dict.get('name')
+        config = data_dict.get('config')
+        return cls(name, config)
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create an instance
+    instance = {0}("example", {{"debug": True}})
+    
+    # Initialize
+    instance.initialize()
+    
+    # Process data
+    result = instance.process("test data")
+    print(result)
+    
+    # Use static method
+    static_result = {0}.static_method("static data")
+    print(static_result)
+    
+    # Create from dictionary
+    new_instance = {0}.from_dict({{
+        "name": "dict_example",
+        "config": {{"debug": False}}
+    }})
+    new_instance.initialize()
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported Python template type: $TemplateType. Supported types: Script, Class"
+        }
+    }
+}
+
+# Function to generate CSharp templates
+function Get-CSharpTemplate {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateType,
+        
+        [Parameter()]
+        [string]$ProjectName = "MyProject",
+        
+        [Parameter()]
+        [string]$Author,
+        
+        [Parameter()]
+        [string]$Description
+    )
+    
+    switch ($TemplateType) {
+        "Class" {
+            $Template = @'
+/*
+ * {0}.cs
+ * {1}
+ *
+ * Author: {2}
+ * Date: {3}
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace {0}
+{{
+    /// <summary>
+    /// {1}
+    /// </summary>
+    public class {0}
+    {{
+        // Private fields
+        private string _name;
+        private Dictionary<string, object> _config;
+        
+        /// <summary>
+        /// Gets or sets the name of the instance.
+        /// </summary>
+        public string Name
+        {{
+            get {{ return _name; }}
+            set {{ _name = value; }}
+        }}
+        
+        /// <summary>
+        /// Gets the configuration dictionary.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Config => _config;
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="{0}"/> class.
+        /// </summary>
+        public {0}()
+        {{
+            _name = "Default";
+            _config = new Dictionary<string, object>();
+        }}
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="{0}"/> class with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the instance.</param>
+        public {0}(string name)
+        {{
+            _name = name;
+            _config = new Dictionary<string, object>();
+        }}
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="{0}"/> class with the specified name and configuration.
+        /// </summary>
+        /// <param name="name">The name of the instance.</param>
+        /// <param name="config">The configuration dictionary.</param>
+        public {0}(string name, Dictionary<string, object> config)
+        {{
+            _name = name;
+            _config = config ?? new Dictionary<string, object>();
+        }}
+        
+        /// <summary>
+        /// Initializes the instance with the provided configuration.
+        /// </summary>
+        /// <returns>True if initialization was successful; otherwise, false.</returns>
+        public bool Initialize()
+        {{
+            Console.WriteLine($"Initializing {{_name}} with config: {{string.Join(", ", _config.Select(kv => $"{{kv.Key}}={{kv.Value}}"))}});
+            return true;
+        }}
+        
+        /// <summary>
+        /// Processes the provided data.
+        /// </summary>
+        /// <param name="data">The data to process.</param>
+        /// <returns>The processed data.</returns>
+        public string Process(string data)
+        {{
+            Console.WriteLine($"Processing data with {{_name}}");
+            return $"Processed: {{data}}";
+        }}
+        
+        /// <summary>
+        /// Static method example.
+        /// </summary>
+        /// <param name="input">The input data.</param>
+        /// <returns>The processed input data.</returns>
+        public static string StaticMethod(string input)
+        {{
+            return $"Static processed: {{input}}";
+        }}
+        
+        // Private helper method
+        private void LogMessage(string message)
+        {{
+            Console.WriteLine($"[{{DateTime.Now}}] {{message}}");
+        }}
+    }}
+}}
+
+/*
+ * Example usage:
+ *
+ * var instance = new {0}("example");
+ * instance.Initialize();
+ * var result = instance.Process("test data");
+ * Console.WriteLine(result);
+ *
+ * var staticResult = {0}.StaticMethod("static data");
+ * Console.WriteLine(staticResult);
+ */
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        "Console" {
+            $Template = @'
+/*
+ * Program.cs
+ * {1}
+ *
+ * Author: {2}
+ * Date: {3}
+ */
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace {0}
+{{
+    class Program
+    {{
+        static void Main(string[] args)
+        {{
+            Console.WriteLine("{0} - {1}");
+            Console.WriteLine("Author: {2}");
+            Console.WriteLine("Date: {3}");
+            Console.WriteLine();
+            
+            try
+            {{
+                // Parse command line arguments
+                var arguments = ParseArguments(args);
+                
+                if (arguments.ContainsKey("help") || args.Length == 0)
+                {{
+                    ShowHelp();
+                    return;
+                }}
+                
+                // Process based on arguments
+                if (arguments.ContainsKey("input"))
+                {{
+                    string inputFile = arguments["input"];
+                    Console.WriteLine($"Processing input file: {{inputFile}}");
+                    
+                    if (!File.Exists(inputFile))
+                    {{
+                        Console.WriteLine($"Error: Input file '{{inputFile}}' does not exist.");
+                        return;
+                    }}
+                    
+                    // Process the file
+                    ProcessFile(inputFile, arguments.ContainsKey("output") ? arguments["output"] : null);
+                }}
+                else
+                {{
+                    Console.WriteLine("No input file specified. Use --input or -i to specify an input file.");
+                    ShowHelp();
+                }}
+            }}
+            catch (Exception ex)
+            {{
+                Console.WriteLine($"Error: {{ex.Message}}");
+                Console.WriteLine(ex.StackTrace);
+            }}
+            
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
+        }}
+        
+        static Dictionary<string, string> ParseArguments(string[] args)
+        {{
+            var result = new Dictionary<string, string>();
+            
+            for (int i = 0; i < args.Length; i++)
+            {{
+                string arg = args[i];
+                
+                if (arg.StartsWith("--"))
+                {{
+                    string key = arg.Substring(2).ToLower();
+                    
+                    if (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                    {{
+                        result[key] = args[i + 1];
+                        i++;
+                    }}
+                    else
+                    {{
+                        result[key] = "true";
+                    }}
+                }}
+                else if (arg.StartsWith("-"))
+                {{
+                    string key = arg.Substring(1).ToLower();
+                    
+                    switch (key)
+                    {{
+                        case "i":
+                            key = "input";
+                            break;
+                        case "o":
+                            key = "output";
+                            break;
+                        case "h":
+                            key = "help";
+                            break;
+                        case "v":
+                            key = "verbose";
+                            break;
+                    }}
+                    
+                    if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                    {{
+                        result[key] = args[i + 1];
+                        i++;
+                    }}
+                    else
+                    {{
+                        result[key] = "true";
+                    }}
+                }}
+            }}
+            
+            return result;
+        }}
+        
+        static void ShowHelp()
+        {{
+            Console.WriteLine("Usage: {0} [options]");
+            Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("  --input, -i <file>    Input file to process");
+            Console.WriteLine("  --output, -o <file>   Output file (if not specified, output to console)");
+            Console.WriteLine("  --verbose, -v         Enable verbose output");
+            Console.WriteLine("  --help, -h            Show this help message");
+        }}
+        
+        static void ProcessFile(string inputFile, string outputFile)
+        {{
+            // Read the input file
+            string content = File.ReadAllText(inputFile);
+            
+            // Process the content (example)
+            string processed = $"Processed: {{content}}";
+            
+            // Output the result
+            if (!string.IsNullOrEmpty(outputFile))
+            {{
+                File.WriteAllText(outputFile, processed);
+                Console.WriteLine($"Output written to: {{outputFile}}");
+            }}
+            else
+            {{
+                Console.WriteLine("Processed content:");
+                Console.WriteLine(processed);
+            }}
+        }}
+    }}
+}}
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported CSharp template type: $TemplateType. Supported types: Class, Console"
+        }
+    }
+}
+
+# Function to generate SQL templates
+function Get-SQLTemplate {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateType,
+        
+        [Parameter()]
+        [string]$ProjectName = "MyTable",
+        
+        [Parameter()]
+        [string]$Author,
+        
+        [Parameter()]
+        [string]$Description
+    )
+    
+    switch ($TemplateType) {
+        "Table" {
+            $Template = @'
+/*
+ * Table: {0}
+ * {1}
+ *
+ * Author: {2}
+ * Date: {3}
+ */
+
+-- Create table
+CREATE TABLE {0} (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(MAX),
+    CreatedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    ModifiedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    IsActive BIT NOT NULL DEFAULT 1
+);
+
+-- Add indexes
+CREATE INDEX IX_{0}_Name ON {0} (Name);
+CREATE INDEX IX_{0}_CreatedDate ON {0} (CreatedDate);
+
+-- Add comments
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'{1}',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}';
+
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'Primary key',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}',
+    @level2type = N'COLUMN', @level2name = 'Id';
+
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'Name of the record',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}',
+    @level2type = N'COLUMN', @level2name = 'Name';
+
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'Description of the record',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}',
+    @level2type = N'COLUMN', @level2name = 'Description';
+
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'Date when the record was created',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}',
+    @level2type = N'COLUMN', @level2name = 'CreatedDate';
+
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'Date when the record was last modified',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}',
+    @level2type = N'COLUMN', @level2name = 'ModifiedDate';
+
+EXEC sp_addextendedproperty
+    @name = N'MS_Description',
+    @value = N'Flag indicating if the record is active',
+    @level0type = N'SCHEMA', @level0name = 'dbo',
+    @level1type = N'TABLE',  @level1name = '{0}',
+    @level2type = N'COLUMN', @level2name = 'IsActive';
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        "StoredProcedure" {
+            $Template = @'
+/*
+ * Stored Procedure: {0}
+ * {1}
+ *
+ * Author: {2}
+ * Date: {3}
+ */
+
+CREATE PROCEDURE [dbo].[{0}]
+    @Param1 NVARCHAR(100),
+    @Param2 INT = NULL,
+    @Param3 BIT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Declare variables
+    DECLARE @ErrorMessage NVARCHAR(4000);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+    
+    BEGIN TRY
+        -- Validate parameters
+        IF @Param1 IS NULL OR LEN(TRIM(@Param1)) = 0
+        BEGIN
+            THROW 50000, 'Param1 cannot be null or empty.', 1;
+        END
+        
+        -- Begin transaction
+        BEGIN TRANSACTION;
+        
+        -- Your code here
+        -- Example: Insert a record
+        INSERT INTO ExampleTable (
+            Name,
+            Value,
+            IsActive,
+            CreatedDate
+        )
+        VALUES (
+            @Param1,
+            @Param2,
+            @Param3,
+            GETUTCDATE()
+        );
+        
+        -- Example: Select data
+        SELECT
+            Id,
+            Name,
+            Value,
+            IsActive,
+            CreatedDate
+        FROM
+            ExampleTable
+        WHERE
+            Name = @Param1;
+        
+        -- Commit transaction
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Rollback transaction if it exists
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        -- Get error information
+        SELECT
+            @ErrorMessage = ERROR_MESSAGE(),
+            @ErrorSeverity = ERROR_SEVERITY(),
+            @ErrorState = ERROR_STATE();
+        
+        -- Rethrow the error
+        THROW;
+    END CATCH
+END
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported SQL template type: $TemplateType. Supported types: Table, StoredProcedure"
+        }
+    }
+}
+
+# Function to generate Markdown templates
+function Get-MarkdownTemplate {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateType,
+        
+        [Parameter()]
+        [string]$ProjectName = "My Project",
+        
+        [Parameter()]
+        [string]$Author,
+        
+        [Parameter()]
+        [string]$Description,
+        
+        [Parameter()]
+        [string]$License
+    )
+    
+    switch ($TemplateType) {
+        "README" {
+            $Template = @'
+# {0}
+
+{1}
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Installation
+
+```bash
+# Example installation steps
+git clone https://github.com/username/{0}.git
+cd {0}
+npm install  # or pip install, etc.
+```
+
+## Usage
+
+```bash
+# Example usage
+npm start  # or python main.py, etc.
+```
+
+## Features
+
+- Feature 1: Description of feature 1
+- Feature 2: Description of feature 2
+- Feature 3: Description of feature 3
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the {4} License - see the LICENSE file for details.
+
+## Author
+
+- {2}
+- Created on: {3}
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate), $License
+            return $Template
+        }
+        
+        "Documentation" {
+            $Template = @'
+# {0} Documentation
+
+{1}
+
+## Overview
+
+This document provides comprehensive documentation for the {0} project.
+
+## Getting Started
+
+### Prerequisites
+
+- Requirement 1
+- Requirement 2
+- Requirement 3
+
+### Installation
+
+```bash
+# Installation steps
+```
+
+## Architecture
+
+### Component 1
+
+Description of component 1.
+
+### Component 2
+
+Description of component 2.
+
+## API Reference
+
+### Function/Method 1
+
+```
+function1(param1, param2)
+```
+
+**Parameters:**
+- `param1` (type): Description of param1
+- `param2` (type): Description of param2
+
+**Returns:**
+- (type): Description of return value
+
+**Example:**
+```
+// Example usage
+```
+
+### Function/Method 2
+
+```
+function2(param1, param2)
+```
+
+**Parameters:**
+- `param1` (type): Description of param1
+- `param2` (type): Description of param2
+
+**Returns:**
+- (type): Description of return value
+
+**Example:**
+```
+// Example usage
+```
+
+## Configuration
+
+### Configuration File
+
+```
+# Example configuration file
+```
+
+### Environment Variables
+
+- `ENV_VAR_1`: Description of environment variable 1
+- `ENV_VAR_2`: Description of environment variable 2
+
+## Troubleshooting
+
+### Common Issue 1
+
+Description of issue 1 and how to resolve it.
+
+### Common Issue 2
+
+Description of issue 2 and how to resolve it.
+
+## Author
+
+- {2}
+- Last Updated: {3}
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported Markdown template type: $TemplateType. Supported types: README, Documentation"
+        }
+    }
+}
+
+# Function to generate JSON templates
+function Get-JSONTemplate {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateType,
+        
+        [Parameter()]
+        [string]$ProjectName = "MyProject",
+        
+        [Parameter()]
+        [string]$Author,
+        
+        [Parameter()]
+        [string]$Description
+    )
+    
+    switch ($TemplateType) {
+        "Config" {
+            $Template = @'
+{
+  "name": "{0}",
+  "version": "1.0.0",
+  "description": "{1}",
+  "author": "{2}",
+  "created": "{3}",
+  "config": {
+    "environment": "development",
+    "debug": true,
+    "logLevel": "info",
+    "port": 3000,
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "mydb",
+      "user": "user",
+      "password": "password"
+    },
+    "api": {
+      "baseUrl": "https://api.example.com",
+      "timeout": 5000,
+      "retries": 3
+    },
+    "features": {
+      "feature1": true,
+      "feature2": false,
+      "feature3": {
+        "enabled": true,
+        "options": {
+          "option1": "value1",
+          "option2": "value2"
+        }
+      }
+    }
+  }
+}
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        "Package" {
+            $Template = @'
+{
+  "name": "{0}",
+  "version": "1.0.0",
+  "description": "{1}",
+  "author": "{2}",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "build": "webpack --mode production"
+  },
+  "keywords": [
+    "example",
+    "template",
+    "project"
+  ],
+  "dependencies": {
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "jest": "^27.0.6",
+    "eslint": "^7.32.0",
+    "webpack": "^5.50.0",
+    "webpack-cli": "^4.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/{0}.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/{0}/issues"
+  },
+  "homepage": "https://github.com/username/{0}#readme"
+}
+'@ -f $ProjectName, $Description, $Author
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported JSON template type: $TemplateType. Supported types: Config, Package"
+        }
+    }
+}
+
+# Function to generate YAML templates
+function Get-YAMLTemplate {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateType,
+        
+        [Parameter()]
+        [string]$ProjectName = "MyProject",
+        
+        [Parameter()]
+        [string]$Author,
+        
+        [Parameter()]
+        [string]$Description
+    )
+    
+    switch ($TemplateType) {
+        "Config" {
+            $Template = @'
+# {0} Configuration
+# {1}
+# Author: {2}
+# Date: {3}
+
+# Application settings
+app:
+  name: {0}
+  version: 1.0.0
+  description: {1}
+  environment: development
+  debug: true
+  log_level: info
+  port: 3000
+
+# Database configuration
+database:
+  host: localhost
+  port: 5432
+  name: mydb
+  user: user
+  password: password
+  pool:
+    min: 5
+    max: 20
+    idle_timeout: 10000
+
+# API configuration
+api:
+  base_url: https://api.example.com
+  timeout: 5000
+  retries: 3
+  endpoints:
+    users: /api/users
+    products: /api/products
+    orders: /api/orders
+
+# Feature flags
+features:
+  feature1: true
+  feature2: false
+  feature3:
+    enabled: true
+    options:
+      option1: value1
+      option2: value2
+
+# Logging configuration
+logging:
+  console:
+    enabled: true
+    level: info
+  file:
+    enabled: true
+    level: debug
+    path: ./logs
+    filename: app.log
+    max_size: 10m
+    max_files: 5
+
+# Security settings
+security:
+  jwt:
+    secret: your-secret-key
+    expiration: 3600
+  cors:
+    allowed_origins:
+      - http://localhost:3000
+      - https://example.com
+    allowed_methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        "Docker" {
+            $Template = @'
+# {0} Docker Compose Configuration
+# {1}
+# Author: {2}
+# Date: {3}
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: {0}-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/mydb
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13
+    container_name: {0}-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mydb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:6
+    container_name: {0}-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+'@ -f $ProjectName, $Description, $Author, (Get-FormattedDate)
+            return $Template
+        }
+        
+        default {
+            throw "Unsupported YAML template type: $TemplateType. Supported types: Config, Docker"
+        }
+    }
+}
+
+# Main script execution
+try {
+    # Validate parameters
+    if ([string]::IsNullOrEmpty($ProjectName)) {
+        $ProjectName = switch ($Language) {
+            "HTML" { "MyHTMLProject" }
+            "CSS" { "MyStyles" }
+            "JavaScript" { "MyJavaScriptProject" }
+            "PowerShell" { "MyPowerShellScript" }
+            "Python" { "my_python_project" }
+            "CSharp" { "MyCSharpProject" }
+            "SQL" { "MyDatabase" }
+            "Markdown" { "MyDocument" }
+            "JSON" { "MyConfig" }
+            "YAML" { "MyConfig" }
+            default { "MyProject" }
+        }
+    }
+
+    # Get the appropriate template based on the language
+    $Template = switch ($Language) {
+        "HTML" { Get-HTMLTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "CSS" { Get-CSSTemplate -TemplateType $TemplateType -Author $Author -Description $Description }
+        "JavaScript" { Get-JavaScriptTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "PowerShell" { Get-PowerShellTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "Python" { Get-PythonTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "CSharp" { Get-CSharpTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "SQL" { Get-SQLTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "Markdown" { Get-MarkdownTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description -License $License }
+        "JSON" { Get-JSONTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        "YAML" { Get-YAMLTemplate -TemplateType $TemplateType -ProjectName $ProjectName -Author $Author -Description $Description }
+        default { throw "Unsupported language: $Language" }
+    }
+
+    # Output the template
+    if ([string]::IsNullOrEmpty($OutputPath)) {
+        # Output to console
+        Write-Output $Template
+    }
+    else {
+        # Create directory if it doesn't exist
+        $Directory = Split-Path -Path $OutputPath -Parent
+        if (-not [string]::IsNullOrEmpty($Directory) -and -not (Test-Path -Path $Directory)) {
+            New-Item -Path $Directory -ItemType Directory -Force | Out-Null
+        }
+
+        # Write to file
+        $Template | Out-File -FilePath $OutputPath -Encoding utf8 -Force
+        Write-Output "Template generated and saved to: $OutputPath"
+    }
+}
+catch {
+    Write-Error "Error generating template: $_"
+    exit 1
+}
