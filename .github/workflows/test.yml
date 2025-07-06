@@ -1,0 +1,260 @@
+name: PowerShell Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        powershell-version: ['5.1', '7.x']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PowerShell
+      uses: actions/setup-powershell@v1
+      with:
+        powershell-version: ${{ matrix.powershell-version }}
+        
+    - name: Install Pester
+      shell: pwsh
+      run: |
+        Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+        Import-Module Pester -Force
+        
+    - name: Run syntax validation
+      shell: pwsh
+      run: |
+        $scripts = Get-ChildItem -Path . -Filter "*.ps1" -Recurse | Where-Object { $_.Directory.Name -ne "Tests" }
+        $syntaxErrors = @()
+        
+        foreach ($script in $scripts) {
+          try {
+            $null = [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$null, [ref]$null)
+            Write-Host "✓ $($script.Name) - Syntax OK" -ForegroundColor Green
+          } catch {
+            $syntaxErrors += "$($script.Name): $($_.Exception.Message)"
+            Write-Host "✗ $($script.Name) - Syntax Error" -ForegroundColor Red
+          }
+        }
+        
+        if ($syntaxErrors.Count -gt 0) {
+          Write-Host "Syntax errors found:" -ForegroundColor Red
+          $syntaxErrors | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+          exit 1
+        }
+        
+    - name: Run unit tests
+      shell: pwsh
+      run: |
+        .\RunTests.ps1 -TestType Unit -OutputFormat NUnitXml -CI
+        
+    - name: Run integration tests
+      shell: pwsh
+      run: |
+        .\RunTests.ps1 -TestType Integration -OutputFormat NUnitXml -CI
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.powershell-version }}
+        path: |
+          TestResults/*.xml
+          TestResults/*.html
+          
+    - name: Upload code coverage
+      uses: codecov/codecov-action@v4
+      if: matrix.powershell-version == '7.x'
+      with:
+        file: ./TestResults/coverage.xml
+        flags: powershell
+        name: codecov-powershell
+        fail_ci_if_error: false
+        
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: PowerShell Tests (${{ matrix.powershell-version }})
+        path: TestResults/*.xml
+        reporter: dotnet-trx
+        
+  security-scan:
+    runs-on: windows-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PowerShell
+      uses: actions/setup-powershell@v1
+      with:
+        powershell-version: '7.x'
+        
+    - name: Install PSScriptAnalyzer
+      shell: pwsh
+      run: |
+        Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck -Scope CurrentUser
+        
+    - name: Run PowerShell Script Analyzer
+      shell: pwsh
+      run: |
+        $scripts = Get-ChildItem -Path . -Filter "*.ps1" -Recurse | Where-Object { $_.Directory.Name -ne "Tests" }
+        $analysisResults = @()
+        
+        foreach ($script in $scripts) {
+          $issues = Invoke-ScriptAnalyzer -Path $script.FullName -Severity Warning,Error
+          if ($issues) {
+            $analysisResults += $issues
+            Write-Host "Issues found in $($script.Name):" -ForegroundColor Yellow
+            $issues | ForEach-Object {
+              Write-Host "  [$($_.Severity)] $($_.Message) (Line: $($_.Line))" -ForegroundColor Yellow
+            }
+          }
+        }
+        
+        if ($analysisResults.Count -gt 0) {
+          Write-Host "Total issues found: $($analysisResults.Count)" -ForegroundColor Yellow
+          
+          # Fail if there are any Error-level issues
+          $errors = $analysisResults | Where-Object { $_.Severity -eq 'Error' }
+          if ($errors.Count -gt 0) {
+            Write-Host "Found $($errors.Count) error-level issues. Failing build." -ForegroundColor Red
+            exit 1
+          }
+        } else {
+          Write-Host "No issues found by PSScriptAnalyzer" -ForegroundColor Green
+        }
+        
+    - name: Security scan with Bandit4PS
+      shell: pwsh
+      run: |
+        # Basic security checks
+        $scripts = Get-ChildItem -Path . -Filter "*.ps1" -Recurse | Where-Object { $_.Directory.Name -ne "Tests" }
+        $securityIssues = @()
+        
+        foreach ($script in $scripts) {
+          $content = Get-Content $script.FullName -Raw
+          
+          # Check for potential security issues
+          $issues = @()
+          
+          # Check for hardcoded credentials
+          if ($content -match 'password\s*=\s*["\'][^"\']+["\']|ConvertTo-SecureString.*AsPlainText') {
+            $issues += "Potential hardcoded credentials"
+          }
+          
+          # Check for dangerous cmdlets
+          $dangerousCmdlets = @('Invoke-Expression', 'Invoke-Command', 'Start-Process', 'Add-Type')
+          foreach ($cmdlet in $dangerousCmdlets) {
+            if ($content -match $cmdlet) {
+              $issues += "Uses potentially dangerous cmdlet: $cmdlet"
+            }
+          }
+          
+          # Check for external URLs
+          if ($content -match 'http://|https://') {
+            $issues += "Contains external URLs - review for security"
+          }
+          
+          if ($issues.Count -gt 0) {
+            $securityIssues += "$($script.Name): $($issues -join ', ')"
+          }
+        }
+        
+        if ($securityIssues.Count -gt 0) {
+          Write-Host "Security review needed for the following scripts:" -ForegroundColor Yellow
+          $securityIssues | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+        } else {
+          Write-Host "No obvious security issues found" -ForegroundColor Green
+        }
+        
+  documentation:
+    runs-on: windows-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PowerShell
+      uses: actions/setup-powershell@v1
+      with:
+        powershell-version: '7.x'
+        
+    - name: Generate documentation
+      shell: pwsh
+      run: |
+        # Generate help documentation for all scripts
+        $scripts = Get-ChildItem -Path . -Filter "*.ps1" -Recurse | Where-Object { $_.Directory.Name -ne "Tests" }
+        $docPath = "docs"
+        
+        if (!(Test-Path $docPath)) {
+          New-Item -ItemType Directory -Path $docPath -Force
+        }
+        
+        foreach ($script in $scripts) {
+          try {
+            . $script.FullName
+            $functions = Get-Command -Module $script.BaseName -ErrorAction SilentlyContinue
+            
+            if ($functions) {
+              $helpContent = @()
+              $helpContent += "# $($script.BaseName) Documentation"
+              $helpContent += ""
+              
+              foreach ($function in $functions) {
+                $help = Get-Help $function.Name -Full -ErrorAction SilentlyContinue
+                if ($help) {
+                  $helpContent += "## $($function.Name)"
+                  $helpContent += ""
+                  $helpContent += "**Synopsis:** $($help.Synopsis)"
+                  $helpContent += ""
+                  $helpContent += "**Description:** $($help.Description.Text)"
+                  $helpContent += ""
+                  
+                  if ($help.Parameters) {
+                    $helpContent += "**Parameters:**"
+                    $help.Parameters.Parameter | ForEach-Object {
+                      $helpContent += "- **$($_.Name)**: $($_.Description.Text)"
+                    }
+                    $helpContent += ""
+                  }
+                  
+                  if ($help.Examples) {
+                    $helpContent += "**Examples:**"
+                    $help.Examples.Example | ForEach-Object {
+                      $helpContent += "```powershell"
+                      $helpContent += $_.Code
+                      $helpContent += "```"
+                      $helpContent += ""
+                    }
+                  }
+                }
+              }
+              
+              $docFile = Join-Path $docPath "$($script.BaseName).md"
+              $helpContent | Out-File -FilePath $docFile -Encoding UTF8
+              Write-Host "Generated documentation for $($script.Name)" -ForegroundColor Green
+            }
+          } catch {
+            Write-Host "Could not generate documentation for $($script.Name): $($_.Exception.Message)" -ForegroundColor Yellow
+          }
+        }
+        
+    - name: Upload documentation
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: docs/
