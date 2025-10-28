@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+
 <#
 .SYNOPSIS
     End-to-end integration tests for PowerShell-Tools

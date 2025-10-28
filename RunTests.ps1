@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+
 <#
 .SYNOPSIS
     Main test runner for PowerShell-Tools repository

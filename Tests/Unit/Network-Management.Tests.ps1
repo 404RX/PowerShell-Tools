@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+
 <#
 .SYNOPSIS
     Unit tests for Network-Management scripts
